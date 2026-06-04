@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>川西小环线 & 丽江梅里雪山 4天3夜攻略</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root {
+      --ink: #1e2528;
+      --muted: #5d686d;
+      --line: #d7dee0;
+      --paper: #f8f7f2;
+      --white: #fff;
+      --green: #1f6f64;
+      --red: #c65038;
+      --gold: #d89a2a;
+      --blue: #3577a8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+    header {
+      padding: 34px 18px 22px;
+      border-bottom: 1px solid var(--line);
+      background: #efe9df;
+    }
+    main, .inner { max-width: 1180px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 44px); line-height: 1.15; letter-spacing: 0; }
+    h2 { margin: 34px 0 14px; font-size: 25px; }
+    h3 { margin: 18px 0 8px; font-size: 18px; }
+    p { margin: 0 0 12px; }
+    a { color: #1f5f86; }
+    main { padding: 22px 16px 48px; }
+    .lede { max-width: 900px; color: var(--muted); font-size: 17px; }
+    .notice {
+      margin-top: 16px;
+      padding: 13px 15px;
+      border-left: 5px solid var(--red);
+      border-radius: 8px;
+      background: #fff3ee;
+    }
+    .grid { display: grid; gap: 16px; }
+    .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 15px;
+    }
+    .map-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.8fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+    .map {
+      min-height: 560px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #dce9ea;
+    }
+    .route-label {
+      padding: 3px 7px;
+      border: 1px solid rgba(30, 37, 40, .2);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, .94);
+      color: var(--ink);
+      box-shadow: 0 2px 6px rgba(0,0,0,.12);
+      font: 12px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      white-space: nowrap;
+    }
+    .pin {
+      display: inline-grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      font-weight: 800;
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    th, td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { text-align: left; background: #eef3f1; font-size: 14px; }
+    tr:last-child td { border-bottom: 0; }
+    .small { color: var(--muted); font-size: 13px; }
+    .tag {
+      display: inline-block;
+      margin: 0 6px 8px 0;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: #edf3f1;
+      color: #214f4b;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .day {
+      border-left: 4px solid var(--green);
+      padding-left: 13px;
+      margin: 16px 0;
+    }
+    .photos {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    figure {
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+    figure img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      background: #e4e8e6;
+    }
+    figcaption {
+      padding: 8px 10px 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .split-title {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .budget strong { color: #925a00; }
+    @media (max-width: 900px) {
+      .cols-2, .cols-3, .photos, .map-wrap { grid-template-columns: 1fr; }
+      .map { min-height: 460px; }
+      main { padding: 18px 12px 40px; }
+      table { font-size: 14px; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="inner">
+      <h1>两版 4天3夜毕业旅行攻略</h1>
+      <p class="lede">第一版：成都出发的川西小环线，不加梅里雪山。第二版：丽江出发，到香格里拉、德钦飞来寺看梅里雪山。地图使用真实在线底图与真实坐标绘制，打开页面时会按路由服务拉取道路路线。</p>
+      <div class="notice"><strong>使用提醒：</strong>地图和景点照片需要联网加载；路线距离/时间是规划值，川西和滇西北山路受天气、施工、落石、交通管制影响很大，出发前必须用高德/百度地图复核当天路况。</div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="split-title">
+        <h2>第一版：川西小环线 4天3夜</h2>
+        <div><span class="tag">成都往返</span><span class="tag">不去梅里</span><span class="tag">学生预算更友好</span></div>
+      </div>
+
+      <div class="map-wrap">
+        <div id="map-chuanxi" class="map" aria-label="川西小环线真实地图路线"></div>
+        <div class="card">
+          <h3>路线顺序</h3>
+          <p>成都 → 四姑娘山/双桥沟 → 丹巴甲居藏寨 → 墨石公园 → 塔公草原 → 新都桥 → 红海子/鱼子西 → 康定 → 雅安 → 成都</p>
+          <h3>每晚住宿</h3>
+          <p>D1 住四姑娘山镇；D2 住新都桥；D3 住雅安；D4 返回成都。</p>
+          <h3>适合原因</h3>
+          <p>不绕去稻城和梅里，路程集中在川西经典小环线，预算、驾驶压力和高反风险都更可控。</p>
+        </div>
+      </div>
+
+      <h3>每日安排</h3>
+      <div class="grid cols-2">
+        <div class="day"><h3>D1 成都 → 四姑娘山镇</h3><p>上午从成都出发，经都江堰、映秀、卧龙到四姑娘山。下午游双桥沟或猫鼻梁看雪山。住四姑娘山镇。</p></div>
+        <div class="day"><h3>D2 四姑娘山 → 丹巴 → 墨石 → 塔公 → 新都桥</h3><p>早起离开，先看甲居藏寨，再经八美/墨石公园到塔公草原，傍晚到新都桥。住新都桥。</p></div>
+        <div class="day"><h3>D3 新都桥 → 红海子/鱼子西 → 康定 → 雅安</h3><p>天气好可去鱼子西或红海子，之后经折多山、康定回雅安。住雅安，住宿和餐饮比景区镇更省。</p></div>
+        <div class="day"><h3>D4 雅安 → 成都</h3><p>上午可选碧峰峡/蒙顶山短玩，下午回成都还车。赶高铁/飞机建议中午前离开雅安。</p></div>
+      </div>
+
+      <h3>路段距离和时间</h3>
+      <table>
+        <thead><tr><th>顺序</th><th>路段</th><th>距离</th><th>自驾时间</th><th>建议</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>成都 → 四姑娘山镇/双桥沟</td><td>约 200-230 km</td><td>约 4-5.5 小时</td><td>第一天早点走，避开都江堰、映秀拥堵。</td></tr>
+          <tr><td>2</td><td>四姑娘山 → 丹巴甲居藏寨</td><td>约 110-130 km</td><td>约 2.5-3.5 小时</td><td>山路较多，雨季注意落石。</td></tr>
+          <tr><td>3</td><td>丹巴 → 墨石公园</td><td>约 90-110 km</td><td>约 2-2.5 小时</td><td>若赶时间，墨石只短停拍照。</td></tr>
+          <tr><td>4</td><td>墨石公园 → 塔公草原 → 新都桥</td><td>约 60-75 km</td><td>约 1.5-2 小时</td><td>塔公草原适合看雅拉雪山方向。</td></tr>
+          <tr><td>5</td><td>新都桥 → 红海子/鱼子西 → 康定</td><td>约 80-120 km</td><td>约 2.5-4 小时</td><td>鱼子西日落后下山风险高，不建议夜路。</td></tr>
+          <tr><td>6</td><td>康定 → 雅安</td><td>约 190-220 km</td><td>约 3-4 小时</td><td>住雅安可降低住宿成本。</td></tr>
+          <tr><td>7</td><td>雅安 → 成都</td><td>约 140 km</td><td>约 2-2.5 小时</td><td>最后一天轻松返程。</td></tr>
+        </tbody>
+      </table>
+
+      <h3>景点图片</h3>
+      <div class="photos">
+        <figure>
+          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/%E5%9B%9B%E5%A7%91%E5%A8%98%E5%B1%B1%E5%8F%8C%E6%A1%A5%E6%B2%9F.jpg" alt="四姑娘山双桥沟">
+          <figcaption>四姑娘山双桥沟。图源：Wikimedia Commons / Polyphys，CC BY-SA 4.0。</figcaption>
+        </figure>
+        <figure>
+          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/%E7%94%B2%E5%B1%85%E8%97%8F%E5%AF%A81-%E7%88%B5%E5%A3%AB%E9%BC%93%E6%89%8B_-_panoramio.jpg" alt="丹巴甲居藏寨">
+          <figcaption>丹巴甲居藏寨。图源：Wikimedia Commons / 爵士鼓手，CC BY 3.0。</figcaption>
+        </figure>
+        <figure>
+          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/%E5%9B%9B%E5%B7%9D%E7%94%98%E5%AD%9C%E5%B7%9E%E5%A1%94%E5%85%AC%E5%AF%BA1.JPG" alt="塔公寺">
+          <figcaption>塔公寺/塔公草原一带。图源：Wikimedia Commons / 蒋亦炯。</figcaption>
+        </figure>
+        <figure>
+          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/%E6%91%84%E5%BD%B1%E5%A4%A9%E5%A0%82-%E6%96%B0%E9%83%BD%E6%A1%A5%EF%BC%88Photo_paradise-XIN_DU_QIAO%EF%BC%89_-_panoramio_%284%29.jpg" alt="新都桥">
+          <figcaption>新都桥。图源：Wikimedia Commons / landagent，CC BY-SA 3.0。</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <div class="split-title">
+        <h2>第二版：丽江出发梅里雪山 4天3夜</h2>
+        <div><span class="tag">丽江往返</span><span class="tag">梅里雪山</span><span class="tag">云南北线</span></div>
+      </div>
+
+      <div class="map-wrap">
+        <div id="map-yunnan" class="map" aria-label="丽江到梅里雪山真实地图路线"></div>
+        <div class="card">
+          <h3>路线顺序</h3>
+          <p>丽江 → 虎跳峡 → 香格里拉/独克宗古城 → 奔子栏 → 德钦飞来寺/梅里雪山 → 白马雪山 → 松赞林寺/纳帕海 → 丽江</p>
+          <h3>每晚住宿</h3>
+          <p>D1 住香格里拉市；D2 住飞来寺；D3 住香格里拉市；D4 返回丽江。</p>
+          <h3>适合原因</h3>
+          <p>用 4 天把梅里日照金山放进来，同时不硬走雨崩徒步。第一次去梅里，飞来寺看雪山是最稳妥的玩法。</p>
+        </div>
+      </div>
+
+      <h3>每日安排</h3>
+      <div class="grid cols-2">
+        <div class="day"><h3>D1 丽江 → 虎跳峡 → 香格里拉</h3><p>上午丽江出发，游虎跳峡，下午到香格里拉。傍晚逛独克宗古城、龟山公园。住香格里拉市。</p></div>
+        <div class="day"><h3>D2 香格里拉 → 奔子栏 → 飞来寺</h3><p>经纳帕海、金沙江大湾或奔子栏方向北上，下午到德钦飞来寺。住飞来寺，等第二天清晨看梅里雪山。</p></div>
+        <div class="day"><h3>D3 飞来寺日照金山 → 白马雪山 → 香格里拉</h3><p>清晨看日照金山，上午可去雾浓顶或飞来寺观景台，随后经白马雪山返回香格里拉。住香格里拉市。</p></div>
+        <div class="day"><h3>D4 香格里拉 → 松赞林寺/纳帕海 → 丽江</h3><p>上午选松赞林寺或纳帕海环湖，午后返丽江。若要赶火车/飞机，建议不要安排太晚的景点。</p></div>
+      </div>
+
+      <h3>路段距离和时间</h3>
+      <table>
+        <thead><tr><th>顺序</th><th>路段</th><th>距离</th><th>自驾时间</th><th>建议</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>丽江 → 虎跳峡</td><td>约 80-90 km</td><td>约 1.5-2 小时</td><td>虎跳峡游览通常留 1.5-2.5 小时。</td></tr>
+          <tr><td>2</td><td>虎跳峡 → 香格里拉市</td><td>约 95-110 km</td><td>约 2-2.5 小时</td><td>下午到独克宗古城比较舒服。</td></tr>
+          <tr><td>3</td><td>香格里拉市 → 奔子栏 → 飞来寺</td><td>约 185-220 km</td><td>约 4-5 小时</td><td>山路和弯道多，尽量白天到飞来寺。</td></tr>
+          <tr><td>4</td><td>飞来寺 → 雾浓顶/梅里观景台</td><td>约 10-20 km</td><td>约 20-40 分钟</td><td>看日照金山要提前查日出时间。</td></tr>
+          <tr><td>5</td><td>飞来寺 → 白马雪山 → 香格里拉市</td><td>约 190-230 km</td><td>约 4-5.5 小时</td><td>高海拔路段，冬季注意结冰。</td></tr>
+          <tr><td>6</td><td>香格里拉市 → 丽江</td><td>约 170-184 km</td><td>约 3-4 小时</td><td>走香丽高速/国道组合，返程较稳定。</td></tr>
+        </tbody>
+      </table>
+
+      <h3>景点图片</h3>
+      <div class="photos">
+        <figure>
+          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Lijiang%20Old%20Town.jpg" alt="丽江古城">
+          <figcaption>丽江古城。图源：Wikimedia Commons / ChiralJon。</figcaption>
+        </figure>
+        <figure>
+          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Tiger-leaping-gorge.jpg" alt="虎跳峡">
+          <figcaption>虎跳峡。图源：Wikimedia Commons / Tkotc，CC BY-SA 3.0。</figcaption>
+        </figure>
+        <figure>
+          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/%E6%A2%85%E9%87%8C%E9%9B%AA%E5%B1%B1%E5%85%A8%E6%99%AF_-_2025-05-10_02.jpg" alt="梅里雪山全景">
+          <figcaption>梅里雪山全景。图源：Wikimedia Commons，公开许可见文件页。</figcaption>
+        </figure>
+        <figure>
+          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/%E6%A2%85%E9%87%8C%E9%9B%AA%E5%B1%B1.jpg" alt="梅里雪山">
+          <figcaption>梅里雪山。图源：Wikimedia Commons，公开许可见文件页。</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <h2>预算和选择建议</h2>
+      <div class="grid cols-2 budget">
+        <div class="card">
+          <h3>川西小环线</h3>
+          <p><strong>约 1300-2300 元/人</strong>，按 4 人分摊租车、油费、过路费估算。省钱关键是住镇上普通客栈、少进高价景区、雅安过夜。</p>
+        </div>
+        <div class="card">
+          <h3>丽江梅里线</h3>
+          <p><strong>约 1500-2600 元/人</strong>，丽江往返不涉及异地还车。飞来寺观景房会贵，学生预算可以订普通房，清晨步行去观景台。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>参考信息</h2>
+      <div class="card">
+        <p class="small">车程参考：成都到四姑娘山约 200-220 km、约 4.5-6 小时；丽江到香格里拉约 170-184 km、约 3-4 小时；香格里拉到飞来寺约 185-220 km、约 4 小时左右。参考页面包括 <a href="https://m.cd.bendibao.com/tour/46662.shtm">成都本地宝成都至四姑娘山自驾</a>、<a href="https://tripbok.com/article/sichuanchuanxi-OonXBn">Tripbok 四姑娘山交通与川西联游</a>、<a href="https://itf.mafengwo.cn/client/article.php/info/?id=220115">蚂蜂窝丽江到香格里拉交通</a>、<a href="https://www.icauto.com.cn/route/362_2475.html">车主指南丽江到香格里拉路线</a>。图片主要来自 Wikimedia Commons，文件页已在图片说明中标注。</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const tileLayer = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    const attribution = '&copy; OpenStreetMap contributors';
+
+    const chuanxi = {
+      id: 'map-chuanxi',
+      color: '#c65038',
+      center: [30.62, 102.42],
+      zoom: 8,
+      points: [
+        { n: 1, name: '成都', lat: 30.5728, lng: 104.0668 },
+        { n: 2, name: '四姑娘山镇/双桥沟', lat: 31.0037, lng: 102.8379 },
+        { n: 3, name: '丹巴甲居藏寨', lat: 30.9189, lng: 101.8659 },
+        { n: 4, name: '墨石公园', lat: 30.8318, lng: 101.6779 },
+        { n: 5, name: '塔公草原', lat: 30.3195, lng: 101.5079 },
+        { n: 6, name: '新都桥', lat: 30.0456, lng: 101.4940 },
+        { n: 7, name: '红海子/鱼子西', lat: 30.1204, lng: 101.7902 },
+        { n: 8, name: '康定', lat: 30.0507, lng: 101.9638 },
+        { n: 9, name: '雅安', lat: 29.9805, lng: 103.0133 },
+        { n: 10, name: '成都', lat: 30.5728, lng: 104.0668 }
+      ],
+      segments: [
+        { from: 0, to: 1, label: '成都 → 四姑娘山 200-230 km / 4-5.5h' },
+        { from: 1, to: 2, label: '四姑娘山 → 丹巴 110-130 km / 2.5-3.5h' },
+        { from: 2, to: 3, label: '丹巴 → 墨石 90-110 km / 2-2.5h' },
+        { from: 3, to: 4, label: '墨石 → 塔公 25-35 km / 0.5-1h' },
+        { from: 4, to: 5, label: '塔公 → 新都桥 35-45 km / 0.8-1h' },
+        { from: 5, to: 6, label: '新都桥 → 红海子/鱼子西 40-70 km / 1-2h' },
+        { from: 6, to: 7, label: '红海子 → 康定 35-50 km / 1-1.5h' },
+        { from: 7, to: 8, label: '康定 → 雅安 190-220 km / 3-4h' },
+        { from: 8, to: 9, label: '雅安 → 成都 140 km / 2-2.5h' }
+      ]
+    };
+
+    const yunnan = {
+      id: 'map-yunnan',
+      color: '#3577a8',
+      center: [27.62, 99.55],
+      zoom: 8,
+      points: [
+        { n: 1, name: '丽江', lat: 26.8721, lng: 100.2296 },
+        { n: 2, name: '虎跳峡', lat: 27.1760, lng: 100.1040 },
+        { n: 3, name: '香格里拉市/独克宗', lat: 27.8269, lng: 99.7060 },
+        { n: 4, name: '奔子栏', lat: 28.2352, lng: 99.2792 },
+        { n: 5, name: '德钦飞来寺/梅里', lat: 28.4380, lng: 98.8740 },
+        { n: 6, name: '白马雪山', lat: 28.3678, lng: 99.0941 },
+        { n: 7, name: '香格里拉市/纳帕海', lat: 27.8269, lng: 99.7060 },
+        { n: 8, name: '丽江', lat: 26.8721, lng: 100.2296 }
+      ],
+      segments: [
+        { from: 0, to: 1, label: '丽江 → 虎跳峡 80-90 km / 1.5-2h' },
+        { from: 1, to: 2, label: '虎跳峡 → 香格里拉 95-110 km / 2-2.5h' },
+        { from: 2, to: 3, label: '香格里拉 → 奔子栏 80-100 km / 1.5-2h' },
+        { from: 3, to: 4, label: '奔子栏 → 飞来寺 100-120 km / 2.5-3h' },
+        { from: 4, to: 5, label: '飞来寺 → 白马雪山 45-70 km / 1-1.5h' },
+        { from: 5, to: 6, label: '白马雪山 → 香格里拉 140-170 km / 3-4h' },
+        { from: 6, to: 7, label: '香格里拉 → 丽江 170-184 km / 3-4h' }
+      ]
+    };
+
+    function makePin(number) {
+      return L.divIcon({
+        className: '',
+        html: `<span class="pin">${number}</span>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+    }
+
+    function midpoint(coords) {
+      const mid = Math.floor(coords.length / 2);
+      return coords[mid] || coords[0];
+    }
+
+    function drawFallback(map, config, bounds) {
+      config.segments.forEach((seg) => {
+        const a = config.points[seg.from];
+        const b = config.points[seg.to];
+        const line = [[a.lat, a.lng], [b.lat, b.lng]];
+        L.polyline(line, { color: config.color, weight: 4, opacity: 0.65, dashArray: '8 6' }).addTo(map);
+        L.marker([(a.lat + b.lat) / 2, (a.lng + b.lng) / 2], {
+          interactive: false,
+          icon: L.divIcon({ className: 'route-label', html: seg.label })
+        }).addTo(map);
+        bounds.extend(line[0]);
+        bounds.extend(line[1]);
+      });
+    }
+
+    async function drawSegment(map, config, seg, bounds) {
+      const a = config.points[seg.from];
+      const b = config.points[seg.to];
+      const url = `https://router.project-osrm.org/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('route request failed');
+      const data = await response.json();
+      const coords = data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+      L.polyline(coords, { color: config.color, weight: 5, opacity: 0.86 }).addTo(map);
+      L.marker(midpoint(coords), {
+        interactive: false,
+        icon: L.divIcon({ className: 'route-label', html: seg.label })
+      }).addTo(map);
+      coords.forEach((coord) => bounds.extend(coord));
+    }
+
+    async function buildMap(config) {
+      const map = L.map(config.id, { scrollWheelZoom: true }).setView(config.center, config.zoom);
+      L.tileLayer(tileLayer, { attribution, maxZoom: 18 }).addTo(map);
+      const bounds = L.latLngBounds([]);
+
+      config.points.forEach((p) => {
+        L.marker([p.lat, p.lng], { icon: makePin(p.n) })
+          .bindPopup(`<strong>${p.n}. ${p.name}</strong>`)
+          .addTo(map);
+        bounds.extend([p.lat, p.lng]);
+      });
+
+      try {
+        await Promise.all(config.segments.map((seg) => drawSegment(map, config, seg, bounds)));
+      } catch (error) {
+        drawFallback(map, config, bounds);
+        L.control.attribution({ prefix: false }).addAttribution('路线服务未加载时显示虚线近似连接').addTo(map);
+      }
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+
+    buildMap(chuanxi);
+    buildMap(yunnan);
+  </script>
+</body>
+</html>
